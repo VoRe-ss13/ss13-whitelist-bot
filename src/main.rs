@@ -1,5 +1,6 @@
 use poise::serenity_prelude as serenity;
 use sqlx::{mysql::MySqlPool, Executor, MySql, Pool};
+use url::Url;
 
 struct Data {db: Pool<MySql>} // User data, which is stored and accessible in all command invocations
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -25,8 +26,12 @@ async fn main() {
     let dbpass = std::env::var("SQL_PASS").expect("missing SQL_PASS");
     let dbhost = std::env::var("SQL_HOST").expect("missing SQL_HOST");
     let dbdatabase = std::env::var("SQL_DATABASE").expect("missing SQL_DATABASE");
-    let conn_str = format!("mysql://{dbuser}:{dbpass}@{dbhost}/{dbdatabase}");
-    let pool = MySqlPool::connect(&conn_str).await.unwrap();
+    let conn_str = format!("mysql://{dbhost}:3306/{dbdatabase}");
+    let mut uri = Url::parse(&conn_str).unwrap();
+    uri.set_username(&dbuser).unwrap();
+    uri.set_password(Some(&dbpass)).unwrap();
+    let uri = uri.as_str();
+    let pool = MySqlPool::connect(uri).await.unwrap();
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
