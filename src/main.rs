@@ -64,7 +64,7 @@ pub async fn setckey(
 
     let db = &ctx.data().db;
 
-    db.execute(sqlx::query("INSERT INTO whitelist (discord_id, ckey) VALUES (?, ?) AS new ON DUPLICATE KEY UPDATE ckey = new.ckey").bind(userid).bind(&ckey)).await?;
+    db.execute(sqlx::query("INSERT INTO whitelist (discord_id, ckey) VALUES (?, ?) ON DUPLICATE KEY UPDATE ckey = (?)").bind(userid).bind(&ckey).bind(&ckey)).await?;
 
     ctx.say("Successfully created or updated your record!").await?;
 
